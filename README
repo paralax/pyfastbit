@@ -1,0 +1,8 @@
+pyfastbit
+
+Python bindings for FastBit
+
+requirements:
+- Cython (built using v0.12.1)
+- Fastbit (built using fastbit-ibis1.1.6)
+
