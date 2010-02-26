@@ -37,6 +37,7 @@ print 'from clause', qh.get_from_clause()
 print 'select clause', qh.get_select_clause()
 print 'n_rows', qh.get_result_rows()
 print 'len', len(qh)
+print "reults", qh.get_qualified_doubles("ip")
 
 print '----[ Results'
 rh = ResultSet(qh)

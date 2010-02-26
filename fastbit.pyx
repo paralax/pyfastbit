@@ -179,13 +179,12 @@ Return the string form of the select clause. """
 #                fastbit_get_qualified_bytes(<FastBitQuery*>(self.qh),
 #                                            cname)]
 #
-#    def get_qualified_doubles(self, cname):
-#        """get_qualified_doubles(self, cname)
-#
-#Return the doubles from the qualified selection by column. """
-#        return [x for x in
-#                fastbit_get_qualified_doubles(<FastBitQuery*>(self.qh),
-#                                              cname)]
+    def get_qualified_doubles(self, cname):
+        """get_qualified_doubles(self, cname)
+Return the doubles from the qualified selection by column. """
+        cdef double *d = fastbit_get_qualified_doubles(self.qh, cname)
+        cdef int i, rows = fastbit_get_result_rows(self.qh)
+        return [d[i] for i in range(rows)]
 #
 #    def get_qualified_floats(self, cname):
 #        """get_qualified_floats(self, cname)
