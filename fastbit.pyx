@@ -185,43 +185,34 @@ Return the doubles from the qualified selection by column. """
         cdef double *d = fastbit_get_qualified_doubles(self.qh, cname)
         cdef int i, rows = fastbit_get_result_rows(self.qh)
         return [d[i] for i in range(rows)]
-#
-#    def get_qualified_floats(self, cname):
-#        """get_qualified_floats(self, cname)
-#
-#Return the floats from the qualified selection by column. """
-#        return [x for x in
-#                fastbit_get_qualified_floats(<FastBitQuery*>(self.qh),
-#                                             cname)]
-#
-#    def get_qualified_ints(self, cname):
-#        """get_qualified_ints(self, cname)
-#
-#Return the ints from the qualified selection by column. """
-#        cdef int32_t *data
-#        cdef int nhits
-#        res = []
-#        data = fastbit_get_qualified_ints(<FastBitQuery*>(self.qh), <char *>cname)
-#        nhits = fastbit_get_result_rows(<FastBitQuery*>(self.qh))
-#        print 'get_qualified_ints', cname, nhits
-#        for j in range(0, nhits):
-#            print data[j]
-#        return res
-#
-#    def get_qualified_longs(self, cname):
-#        """get_qualified_longs(self, cname)
-#
-#Return the longs from the  qualified selection by column. """
-#        return [x for x in
-#                fastbit_get_qualified_longs(<FastBitQuery*>(self.qh),
-#                                            cname)]
-#
-#    def get_qualified_shorts(self, cname):
-#        """get_qualified_shorts(self, cname)
-#Return the shorts from the  qualified selection by column. """
-#        return [x for x in
-#                fastbit_get_qualified_shorts(<FastBitQuery*>(self.qh),
-#                                             cname)]
+
+
+    def get_qualified_floats(self, cname):
+        """get_qualified_doubles(self, cname)
+Return the floats from the qualified selection by column. """
+        cdef float *d = fastbit_get_qualified_floats(self.qh, cname)
+        cdef int i, rows = fastbit_get_result_rows(self.qh)
+        return [d[i] for i in range(rows)]
+
+    def get_qualified_ints(self, cname):
+        """get_qualified_doubles(self, cname)
+Return the floats from the qualified selection by column. """
+        cdef int32_t *d = fastbit_get_qualified_ints(self.qh, cname)
+        cdef int i, rows = fastbit_get_result_rows(self.qh)
+        return [d[i] for i in range(rows)]
+    def get_qualified_longs(self, cname):
+        """get_qualified_longs(self, cname)
+Return the floats from the qualified selection by column. """
+        cdef int64_t *d = fastbit_get_qualified_longs(self.qh, cname)
+        cdef int i, rows = fastbit_get_result_rows(self.qh)
+        return [d[i] for i in range(rows)]
+    def get_qualified_shorts(self, cname):
+        """get_qualified_shorts(self, cname)
+Return the floats from the qualified selection by column. """
+        cdef int16_t *d = fastbit_get_qualified_shorts(self.qh, cname)
+        cdef int i, rows = fastbit_get_result_rows(self.qh)
+        return [d[i] for i in range(rows)]
+
 #
 #    def get_qualified_ubytes(self, cname):
 #        """get_qualified_ubytes(self, cname)
