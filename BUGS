@@ -1,0 +1,11 @@
+KNOWN BUGS PyFastBit
+
+--
+
+it hangs on releasing rwlock in the ibis::part destructor. 
+
+e.g. "part[foodir]::releaseAccess -- releasing rwlock for ~part"
+
+--
+
+some of the accessors right now will segfault, exploring. 

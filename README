@@ -1,8 +1,24 @@
-pyfastbit
+pyfastbit						feb 2010
 
 Python bindings for FastBit
 
 requirements:
 - Cython (built using v0.12.1)
 - Fastbit (built using fastbit-ibis1.1.6)
+
+INSTALLATION
+
+1. get and install FastBit http://crd.lbl.gov/~kewu/fastbit/
+
+   i've found it requires gcc-4.2 or later to compile OK. 
+
+2. unpack the pyfastbit bindings under the fastbit source's top level
+   directory.
+
+3. run 'make' to generate the bindings. 'make install' will install them
+   for you.
+
+TODO
+
+fix bugs, go release.
 
