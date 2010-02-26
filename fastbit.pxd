@@ -70,7 +70,7 @@ cdef extern from "../src/capi.h":
     int32_t * fastbit_get_qualified_ints (FastBitQuery* query, char *cname)
     int64_t * fastbit_get_qualified_longs (FastBitQuery* query, char *cname)
     int16_t * fastbit_get_qualified_shorts (FastBitQuery* query, char *cname)
-    char *    fastbit_get_qualified_ubytes (FastBitQuery* query, char *cname)
+    unsigned char *    fastbit_get_qualified_ubytes (FastBitQuery* query, char *cname)
     uint32_t *    fastbit_get_qualified_uints (FastBitQuery* query, char *cname)
     uint64_t *    fastbit_get_qualified_ulongs (FastBitQuery* query, char *cname)
     uint16_t *    fastbit_get_qualified_ushorts (FastBitQuery* query, char *cname)
@@ -90,3 +90,4 @@ cdef extern from "../src/capi.h":
     int32_t  fastbit_result_set_getInt(FastBitResultSet *rset, unsigned position)
     char *   fastbit_result_set_getString(FastBitResultSet *rset, unsigned position)
     uint32_t fastbit_result_set_getUnsigned(FastBitResultSet *rset, unsigned position)
+
