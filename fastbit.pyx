@@ -119,6 +119,18 @@ Purge all index files. """
 
 cdef class Query:
     # The Query class holds queries over the FastBit data set
+    """Query(self, selectClause, indexLocation, queryConditions)
+
+    Build a new FastBit query. 
+
+    This is logically equivalent to the SQL statement 
+      "SELECT selectClause 
+       FROM indexLocation 
+       WHERE queryConditions." 
+    A blank selectClause is equivalent to "count(*)".
+
+    Must call destroy_query or __del__() to free the resources.
+    """
     cdef FastBitQuery* qh
     def __cinit__(self, char *selectClause, char *indexLocation, char *queryConditions):
         self.qh = fastbit_build_query(selectClause, indexLocation, queryConditions)    
@@ -171,14 +183,15 @@ Return the number of hits in the query. """
 Return the string form of the select clause. """
         return fastbit_get_select_clause (<FastBitQuery*>(self.qh))
 
-#    def get_qualified_bytes(self, cname):
-#        """get_qualified_bytes(self, cname)
-#
-#Return the bytes from the qualified selection by column. """
-#        return [x for x in
-#                fastbit_get_qualified_bytes(<FastBitQuery*>(self.qh),
-#                                            cname)]
-#
+
+    def get_qualified_bytes(self, cname):
+        """get_qualified_bytes(self, cname)
+
+Return the bytes from the qualified selection by column. """
+        cdef char *d = fastbit_get_qualified_bytes(<FastBitQuery*>(self.qh), cname)
+        cdef int i, rows = fastbit_get_result_rows(self.qh)
+        return [d[i] for i in range(rows)]
+                
     def get_qualified_doubles(self, cname):
         """get_qualified_doubles(self, cname)
 Return the doubles from the qualified selection by column. """
@@ -200,12 +213,14 @@ Return the floats from the qualified selection by column. """
         cdef int32_t *d = fastbit_get_qualified_ints(self.qh, cname)
         cdef int i, rows = fastbit_get_result_rows(self.qh)
         return [d[i] for i in range(rows)]
+
     def get_qualified_longs(self, cname):
         """get_qualified_longs(self, cname)
 Return the floats from the qualified selection by column. """
         cdef int64_t *d = fastbit_get_qualified_longs(self.qh, cname)
         cdef int i, rows = fastbit_get_result_rows(self.qh)
         return [d[i] for i in range(rows)]
+
     def get_qualified_shorts(self, cname):
         """get_qualified_shorts(self, cname)
 Return the floats from the qualified selection by column. """
@@ -213,41 +228,48 @@ Return the floats from the qualified selection by column. """
         cdef int i, rows = fastbit_get_result_rows(self.qh)
         return [d[i] for i in range(rows)]
 
-#
-#    def get_qualified_ubytes(self, cname):
-#        """get_qualified_ubytes(self, cname)
-#
-#Return the unsigned bytes from the  qualified selection by column. """
-#        return <object>fastbit_get_qualified_ubytes(<FastBitQuery*>(self.qh), cname)
-#
-#    def get_qualified_uints(self, cname):
-#        """get_qualified_uints(self, cname)
-#
-#Return the unsigned ints from the  qualified selection by column. """
-#        return fastbit_get_qualified_uints(<FastBitQuery*>(self.qh), cname)[0]
-#
-#    def get_qualified_ulongs(self, cname):
-#        """get_qualified_ulongs(self, cname)
-#
-#Return the unsigned longs from the  qualified selection by column. """
-#        return <object>fastbit_get_qualified_ulongs(<FastBitQuery*>(self.qh), cname)
-#
-#    def get_qualified_ushorts(self, cname):
-#        """get_qualified_ushorts(self, cname)
-#
-#Return the unsigned shorts from the  qualified selection by column. """
-#        return <object>fastbit_get_qualified_ushorts(<FastBitQuery*>(self.qh), cname)
-#
-#
-#
-#
-#
+    def get_qualified_ubytes(self, cname):
+        """get_qualified_ubytes(self, cname)
+
+Return the unsigned bytes from the  qualified selection by column. """
+        cdef unsigned char *d = fastbit_get_qualified_ubytes(<FastBitQuery*>(self.qh),<char *>cname)
+        cdef int i, rows = fastbit_get_result_rows(self.qh)
+        return [d[i] for i in range(rows)]
+
+    def get_qualified_uints(self, cname):
+        """get_qualified_uints(self, cname)
+
+Return the unsigned ints from the  qualified selection by column. """
+        cdef uint32_t *d = fastbit_get_qualified_uints(<FastBitQuery*>(self.qh),<char *>cname)
+        cdef int i, rows = fastbit_get_result_rows(self.qh)
+        return [d[i] for i in range(rows)]
+                
+    def get_qualified_ulongs(self, cname):
+        """get_qualified_ulongs(self, cname)
+
+Return the unsigned longs from the  qualified selection by column. """
+        cdef uint64_t *d = fastbit_get_qualified_ulongs(<FastBitQuery*>(self.qh),<char *>cname)
+        cdef int i, rows = fastbit_get_result_rows(self.qh)
+        return [d[i] for i in range(rows)]
+
+    def get_qualified_ushorts(self, cname):
+        """get_qualified_ushorts(self, cname)
+
+Return the unsigned shorts from the  qualified selection by column. """
+        cdef uint16_t *d = fastbit_get_qualified_ushorts(<FastBitQuery*>(self.qh),<char *>cname)
+        cdef int i, rows = fastbit_get_result_rows(self.qh)
+        return [d[i] for i in range(rows)]
+        
+                
+                
+                
 cdef class ResultSet:
-    cdef FastBitResultSet *rh
-    def __init__(self, Query query):
-        """__init__(self, query)
+    # A handle to identify a set of query results. 
+    """ResultSet(self, query)
 
 Build a new result set from a Query object. """
+    cdef FastBitResultSet *rh
+    def __init__(self, Query query):
         self.rh = fastbit_build_result_set(query.qh)
 
     def __del__(self):
@@ -256,7 +278,7 @@ Build a new result set from a Query object. """
     def has_next(self):
         """has_next(self)
 
-#Returns 0 if there are more results, otherwise returns -1. """
+Returns 0 if there are more results, otherwise returns -1. """
         return fastbit_result_set_next(<FastBitResultSet *>(self.rh))
 
     def get_double(self, cname):
@@ -288,9 +310,32 @@ Get the value of the named column as a string. """
 
 Get the value of the named column as an unsigned integer. """
         return fastbit_result_set_get_unsigned(<FastBitResultSet *>(self.rh), cname)
-
+        
+    def getDouble(self, position):
+        """getDouble(self, position)
+        Get the value of the named column as a double-precision floating-point number."""
+        return fastbit_result_set_getDouble(<FastBitResultSet *>(self.rh), position)
+    
+    def getFloat(self, position):
+        """getFloat(self, position)
+        
+Get the value of the named column as a single-precision floating-point number. """
+        return fastbit_result_set_getFloat(<FastBitResultSet *>(self.rh), position)
+        
+    def getInt(self, position):
+        """getInt(self, position)
+        
+Get the value of the named column as an integer. """
+        return fastbit_result_set_getInt(<FastBitResultSet *>(self.rh), position)
+        
     def getString(self, position):
         """getString(self, position)
 
 Get the value of the named column as a string. """
         return <object>fastbit_result_set_getString(<FastBitResultSet *>(self.rh), position)
+    def getUnsigned(self, position):
+        """getUnsigned(self, position)
+        
+        Get the value of the named column as an unsigned integer. """
+        return fastbit_result_set_getUnsigned(<FastBitResultSet *>(self.rh), position)
+        
