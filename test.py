@@ -9,7 +9,7 @@ def ip2dec(ip):
     res = d1 + d2 + d3 + d4
     return res
 
-from fastbit import FastBit, Query #, ResultSet
+from fastbit import FastBit, Query, ResultSet
 
 fast = FastBit()
 print 'set_logfile', fast.set_logfile('testlog')

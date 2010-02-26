@@ -1,94 +1,3 @@
-cdef extern from "stdlib.h":
-    ctypedef unsigned long size_t
-    void free(void *ptr)
-    void *malloc(size_t size)
-    void *realloc(void *ptr, size_t size)
-    size_t strlen(char *s)
-    char *strcpy(char *dest, char *src)
-
-cdef extern from "stdint.h":
-    ctypedef unsigned char uint8_t
-    ctypedef unsigned short uint16_t
-    ctypedef unsigned int uint32_t
-    ctypedef unsigned long long uint64_t
-    ctypedef signed char int8_t
-    ctypedef signed short int16_t
-    ctypedef signed int int32_t
-    ctypedef signed long long int64_t
-
-cdef extern from "Python.h":
-    int PyString_AsStringAndSize(object string, char **buffer, Py_ssize_t *length) except -1
-    object PyString_FromStringAndSize(char *v, int len)
-    Py_ssize_t PyString_Size(object string)
-    char *PyString_AsString(object string)
-    void Py_INCREF(object)
-    void Py_DECREF(object)
-    void PyEval_InitThreads()
-    int PyErr_CheckSignals()
-    int PyErr_ExceptionMatches(object)
-    object PyCObject_FromVoidPtr(void *cobj, void (*destruct)(void*))
-        
-
-
-cdef extern from "../src/capi.h":
-    struct FastBitQueryHandle:
-           pass
-    struct FastBitQuery:
-        pass
-    struct FastBitResultSetHandle:
-        pass
-
-    void     fastbit_init(char *rcfile)
-    int      fastbit_add_values(char *colname, char *coltype, void *vals, uint32_t nelem, uint32_t start)
-    int      fastbit_build_index (char *indexLocation, char *cname, char *indexOptions)
-    int      fastbit_build_indexes (char *indexLocation, char *indexOptions)
-    void     fastbit_cleanup()
-    int      fastbit_columns_in_partition (char *datadir)
-    int      fastbit_rows_in_partition(char *datadir)
-    int      fastbit_flush_buffer (char *datadir)
-    char *   fastbit_get_logfile()
-    int      fastbit_set_logfile(char *filename)
-    int      fastbit_get_verbose_level()
-    int      fastbit_set_verbose_level(int v)
-    int      fastbit_purge_index(char *indexLocation, char *cname)
-    int      fastbit_purge_indexes(char *indexLocation)
-
-    # Query class  
-    FastBitQuery* fastbit_build_query(char *selectClause, char *indexLocation, char *queryConditions)
-    int      fastbit_destroy_query(FastBitQuery* query)
-    int      fastbit_get_result_columns(FastBitQuery* query)
-    int      fastbit_get_result_rows(FastBitQuery* query)
-    char *   fastbit_get_select_clause(FastBitQuery* query)
-    char *   fastbit_get_from_clause(FastBitQuery* query)
-    char *   fastbit_get_where_clause(FastBitQuery* query)
-    char *   fastbit_get_qualified_bytes (FastBitQuery* query, char *cname)
-    double * fastbit_get_qualified_doubles (FastBitQuery* query, char *cname)
-    float *  fastbit_get_qualified_floats (FastBitQuery* query, char *cname)
-    int32_t * fastbit_get_qualified_ints (FastBitQuery* query, char *cname)
-    int64_t * fastbit_get_qualified_longs (FastBitQuery* query, char *cname)
-    int16_t * fastbit_get_qualified_shorts (FastBitQuery* query, char *cname)
-    char *    fastbit_get_qualified_ubytes (FastBitQuery* query, char *cname)
-    uint32_t *    fastbit_get_qualified_uints (FastBitQuery* query, char *cname)
-    uint64_t *    fastbit_get_qualified_ulongs (FastBitQuery* query, char *cname)
-    uint16_t *    fastbit_get_qualified_ushorts (FastBitQuery* query, char *cname)
-
-
-    # Result class
-    FastBitResultSetHandle fastbit_build_result_set(FastBitQuery* query)
-    int      fastbit_destroy_result_set(FastBitResultSetHandle rset)
-    int      fastbit_result_set_next(FastBitResultSetHandle rset)
-    double   fastbit_result_set_get_double(FastBitResultSetHandle rset, char *cname)
-    float    fastbit_result_set_get_float(FastBitResultSetHandle rset, char *cname)
-    int      fastbit_result_set_get_int(FastBitResultSetHandle rset, char *cname)
-    char *   fastbit_result_set_get_string(FastBitResultSetHandle rset, char *cname)
-    unsigned int fastbit_result_set_get_unsigned(FastBitResultSetHandle rset, char *cname)
-    double   fastbit_result_set_getDouble(FastBitResultSetHandle rset, unsigned position)
-    float    fastbit_result_set_getFloat(FastBitResultSetHandle rset, unsigned position)
-    int32_t  fastbit_result_set_getInt(FastBitResultSetHandle rset, unsigned position)
-    char *   fastbit_result_set_getString(FastBitResultSetHandle rset, unsigned position)
-    uint32_t fastbit_result_set_getUnsigned(FastBitResultSetHandle rset, unsigned position)
-
-
 #PyEval_InitThreads()
 #
 class FastBit:
@@ -230,19 +139,19 @@ cdef class Query:
         """destroy_query(self)
 
 Free all resource associated with the handle. """
-        fastbit_destroy_query(<FastBitQuery*>(self.qh))
+        fastbit_destroy_query(self.qh)
 
     def get_from_clause(self):
         """get_from_clause(self)
 
 Return the table name. """
-        return fastbit_get_from_clause (<FastBitQuery*>(self.qh))
+        return fastbit_get_from_clause(self.qh)
 
     def get_where_clause(self):
         """get_where_clause(self)
 
 Return the query conditions. """
-        return fastbit_get_where_clause (<FastBitQuery*>(self.qh))
+        return fastbit_get_where_clause(self.qh)
 
     def get_result_columns(self):
         """get_result_columns(self)
@@ -261,7 +170,7 @@ Return the number of hits in the query. """
 
 Return the string form of the select clause. """
         return fastbit_get_select_clause (<FastBitQuery*>(self.qh))
-#
+
 #    def get_qualified_bytes(self, cname):
 #        """get_qualified_bytes(self, cname)
 #
@@ -343,55 +252,55 @@ Return the string form of the select clause. """
 #
 #
 #
-#cdef class ResultSet:
-#    cdef FastBitResultSetHandle rh
-#    def __init__(self, query):
-#        """__init__(self, query)
-#
-#Build a new result set from a Query object. """
-#        self.rh = fastbit_build_result_set(<FastBitQuery*>(query.qh))
-#
-#    def __del__(self):
-#        fastbit_destroy_result_set(<FastBitResultSetHandle>(self.rh))
-#
-#    def has_next(self):
-#        """has_next(self)
-#
+cdef class ResultSet:
+    cdef FastBitResultSet *rh
+    def __init__(self, Query query):
+        """__init__(self, query)
+
+Build a new result set from a Query object. """
+        self.rh = fastbit_build_result_set(query.qh)
+
+    def __del__(self):
+        fastbit_destroy_result_set(<FastBitResultSet *>(self.rh))
+
+    def has_next(self):
+        """has_next(self)
+
 #Returns 0 if there are more results, otherwise returns -1. """
-#        return fastbit_result_set_next(<FastBitResultSetHandle>(self.rh))
-#
-#    def get_double(self, cname):
-#        """get_double(self, cname)
-#
-#Get the value of the named column as a double-precision floating-point number. """
-#        return   fastbit_result_set_get_double(<FastBitResultSetHandle>(self.rh), cname)
-#
-#    def get_float(self, cname):
-#        """get_float(self, cname)
-#
-#Get the value of the named column as a single-precision floating-point number. """
-#        return fastbit_result_set_get_float(<FastBitResultSetHandle>(self.rh), cname)
-#
-#    def get_int(self, cname):
-#        """get_int(self, cname)
-#
-#Get the value of the named column as an integer. """
-#        return fastbit_result_set_get_int(<FastBitResultSetHandle>(self.rh), cname)
-#
-#    def get_string(self, cname):
-#        """get_string(self, cname)
-#
-#Get the value of the named column as a string. """
-#        return fastbit_result_set_get_string(<FastBitResultSetHandle>(self.rh), cname)
-#
-#    def get_unsigned(self, cname):
-#        """get_unsigned(self, cname)
-#
-#Get the value of the named column as an unsigned integer. """
-#        return fastbit_result_set_get_unsigned(<FastBitResultSetHandle>(self.rh), cname)
-#
-#    def getString(self, position):
-#        """getString(self, position)
-#
-#Get the value of the named column as a string. """
-#        return <object>fastbit_result_set_getString(<FastBitResultSetHandle>(self.rh), position)
+        return fastbit_result_set_next(<FastBitResultSet *>(self.rh))
+
+    def get_double(self, cname):
+        """get_double(self, cname)
+
+Get the value of the named column as a double-precision floating-point number. """
+        return   fastbit_result_set_get_double(<FastBitResultSet *>(self.rh), cname)
+
+    def get_float(self, cname):
+        """get_float(self, cname)
+
+Get the value of the named column as a single-precision floating-point number. """
+        return fastbit_result_set_get_float(<FastBitResultSet *>(self.rh), cname)
+
+    def get_int(self, cname):
+        """get_int(self, cname)
+
+Get the value of the named column as an integer. """
+        return fastbit_result_set_get_int(<FastBitResultSet *>(self.rh), cname)
+
+    def get_string(self, cname):
+        """get_string(self, cname)
+
+Get the value of the named column as a string. """
+        return fastbit_result_set_get_string(<FastBitResultSet *>(self.rh), cname)
+
+    def get_unsigned(self, cname):
+        """get_unsigned(self, cname)
+
+Get the value of the named column as an unsigned integer. """
+        return fastbit_result_set_get_unsigned(<FastBitResultSet *>(self.rh), cname)
+
+    def getString(self, position):
+        """getString(self, position)
+
+Get the value of the named column as a string. """
+        return <object>fastbit_result_set_getString(<FastBitResultSet *>(self.rh), position)
