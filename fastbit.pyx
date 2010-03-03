@@ -79,8 +79,8 @@ NOTE: Only 100000 values may be commtted at once in add_values().
                 for i in xrange(0, len(invals)):             
                     ulvals[i] = <uint64_t>(invals[i]) 
                 return fastbit_add_values (colname, coltype, ulvals, n, start)
-            else:
-                raise Exception, 'unsupported coltype %s' % coltype
+        else:
+            raise Exception, 'unsupported coltype %s' % coltype
 
     def build_index(self, indexLocation, cname):
         """build_index(self, indexLocation, cname)
