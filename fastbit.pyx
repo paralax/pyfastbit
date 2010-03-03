@@ -13,10 +13,12 @@ to read multiple configuration files to modify the parameters."""
     def __del__(self):
         self.cleanup()
 
-    def add_values(self, colname, coltype, vals, start):
+    def add_values(self, colname, coltype, invals, start):
         """add_values(self, colname, coltype, vals, start)
 
 Add values of the specified column (colname) to the in-memory buffer.
+
+NOTE: Only 100000 values may be commtted at once in add_values(). 
  
   colname Name of the column. Must start with an alphabet and 
    followed by a combination of alphanumerical characters. Following 
@@ -31,7 +33,54 @@ Add values of the specified column (colname) to the in-memory buffer.
    Normally, this argument is zero (0) if all values are valid. One may 
    use this argument to skip some rows and indicate to FastBit that the 
    skipped rows contain NULL values."""
-        return fastbit_add_values (colname, coltype, <void *>vals, len(vals), start)
+        cdef int n = len(invals)
+        # XXXX gross hack ...
+        if len(invals) > 100000:
+            raise Exception, "Only 100000 values may be added at once before flushing"
+        cdef int32_t  ivals[100000]
+        cdef int16_t  svals[100000]
+        cdef float    fvals[100000]
+        cdef int64_t  lvals[100000]
+        cdef char    *cvals[100000]
+        cdef uint32_t uivals[100000]
+        cdef uint16_t usvals[100000]
+        cdef uint64_t ulvals[100000]
+
+        if coltype.lower().startswith('i'):
+            for i in xrange(0, len(invals)): 
+                ivals[i] = <int32_t>(invals[i])
+            return fastbit_add_values (colname, coltype, ivals, n, start)
+        elif coltype.lower().startswith('s'):
+            for i in xrange(0, len(invals)): 
+                svals[i] = <int16_t>(invals[i])
+            return fastbit_add_values (colname, coltype, svals, n, start)
+        elif coltype.lower().startswith('f'):
+            for i in xrange(0, len(invals)): 
+                fvals[i] = <float>(invals[i])
+            return fastbit_add_values (colname, coltype, fvals, n, start)
+        elif coltype.lower().startswith('l'):
+            for i in xrange(0, len(invals)): 
+                lvals[i] = <int64_t>(invals[i])
+            return fastbit_add_values (colname, coltype, lvals, n, start)
+        elif coltype.lower()[0] in ('c', 't',):
+            for i in xrange(0, len(invals)): 
+                cvals[i] = <char *>(invals[i])
+            return fastbit_add_values (colname, coltype, cvals, n, start)
+        elif coltype.lower().startswith('u'):
+            if coltype.lower()[1] == 'i':
+                for i in xrange(0, len(invals)):             
+                    uivals[i] = <uint32_t>(invals[i])
+                return fastbit_add_values (colname, coltype, uivals, n, start)
+            elif coltype.lower()[1] == 's':
+                for i in xrange(0, len(invals)):             
+                    usvals[i] = <uint16_t>(invals[i])
+                return fastbit_add_values (colname, coltype, usvals, n, start)
+            elif coltype.lower()[1] == 'l':
+                for i in xrange(0, len(invals)):             
+                    ulvals[i] = <uint64_t>(invals[i]) 
+                return fastbit_add_values (colname, coltype, ulvals, n, start)
+            else:
+                raise Exception, 'unsupported coltype %s' % coltype
 
     def build_index(self, indexLocation, cname):
         """build_index(self, indexLocation, cname)
@@ -197,7 +246,7 @@ Return the bytes from the qualified selection by column. """
 Return the doubles from the qualified selection by column. """
         cdef double *d = fastbit_get_qualified_doubles(self.qh, cname)
         cdef int i, rows = fastbit_get_result_rows(self.qh)
-        return [d[i] for i in range(rows)]
+        return [long(d[i]) for i in range(rows)]
 
 
     def get_qualified_floats(self, cname):
@@ -212,21 +261,21 @@ Return the floats from the qualified selection by column. """
 Return the floats from the qualified selection by column. """
         cdef int32_t *d = fastbit_get_qualified_ints(self.qh, cname)
         cdef int i, rows = fastbit_get_result_rows(self.qh)
-        return [d[i] for i in range(rows)]
+        return [int(d[i]) for i in range(rows)]
 
     def get_qualified_longs(self, cname):
         """get_qualified_longs(self, cname)
 Return the floats from the qualified selection by column. """
         cdef int64_t *d = fastbit_get_qualified_longs(self.qh, cname)
         cdef int i, rows = fastbit_get_result_rows(self.qh)
-        return [d[i] for i in range(rows)]
+        return [long(d[i]) for i in range(rows)]
 
     def get_qualified_shorts(self, cname):
         """get_qualified_shorts(self, cname)
 Return the floats from the qualified selection by column. """
         cdef int16_t *d = fastbit_get_qualified_shorts(self.qh, cname)
         cdef int i, rows = fastbit_get_result_rows(self.qh)
-        return [d[i] for i in range(rows)]
+        return [int(d[i]) for i in range(rows)]
 
     def get_qualified_ubytes(self, cname):
         """get_qualified_ubytes(self, cname)
@@ -234,7 +283,7 @@ Return the floats from the qualified selection by column. """
 Return the unsigned bytes from the  qualified selection by column. """
         cdef unsigned char *d = fastbit_get_qualified_ubytes(<FastBitQuery*>(self.qh),<char *>cname)
         cdef int i, rows = fastbit_get_result_rows(self.qh)
-        return [d[i] for i in range(rows)]
+        return [<object>(d[i]) for i in range(rows)]
 
     def get_qualified_uints(self, cname):
         """get_qualified_uints(self, cname)
@@ -242,7 +291,7 @@ Return the unsigned bytes from the  qualified selection by column. """
 Return the unsigned ints from the  qualified selection by column. """
         cdef uint32_t *d = fastbit_get_qualified_uints(<FastBitQuery*>(self.qh),<char *>cname)
         cdef int i, rows = fastbit_get_result_rows(self.qh)
-        return [d[i] for i in range(rows)]
+        return [<object>(d[i]) for i in range(rows)]
                 
     def get_qualified_ulongs(self, cname):
         """get_qualified_ulongs(self, cname)
@@ -250,7 +299,7 @@ Return the unsigned ints from the  qualified selection by column. """
 Return the unsigned longs from the  qualified selection by column. """
         cdef uint64_t *d = fastbit_get_qualified_ulongs(<FastBitQuery*>(self.qh),<char *>cname)
         cdef int i, rows = fastbit_get_result_rows(self.qh)
-        return [d[i] for i in range(rows)]
+        return [<object>(d[i]) for i in range(rows)]
 
     def get_qualified_ushorts(self, cname):
         """get_qualified_ushorts(self, cname)
@@ -258,7 +307,7 @@ Return the unsigned longs from the  qualified selection by column. """
 Return the unsigned shorts from the  qualified selection by column. """
         cdef uint16_t *d = fastbit_get_qualified_ushorts(<FastBitQuery*>(self.qh),<char *>cname)
         cdef int i, rows = fastbit_get_result_rows(self.qh)
-        return [d[i] for i in range(rows)]
+        return [<object>(d[i]) for i in range(rows)]
         
                 
                 
@@ -333,6 +382,7 @@ Get the value of the named column as an integer. """
 
 Get the value of the named column as a string. """
         return <object>fastbit_result_set_getString(<FastBitResultSet *>(self.rh), position)
+
     def getUnsigned(self, position):
         """getUnsigned(self, position)
         
