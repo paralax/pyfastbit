@@ -15,7 +15,6 @@ ips = ['24.126.104.55', '63.254.155.34', '64.189.104.238',
        '81.222.80.217', '98.230.97.172', '157.252.179.242', 
        '208.102.79.212']
 print 'add', fast.add_values('ip', 'uI', [ ip2dec(x) for x in ips], 0)
-# names = [ '0' for x in ips ]
 names = [ x for x in  xrange(0, len(ips)) ]
 print 'add', fast.add_values('host', 'uI', names, 0)
 print 'flush', fast.flush_buffer('foodir')
@@ -33,7 +32,7 @@ print 'select clause', qh.get_select_clause()
 print 'n_rows', qh.get_result_rows()
 print 'len', len(qh)
 print 'qualified doubles', qh.get_qualified_doubles('ip')
-print 'qualified ints', qh.get_qualified_uints('ip')
+print 'qualified longs', qh.get_qualified_longs('ip')
 
 print '----[ Results'
 rh = ResultSet(qh)
@@ -49,5 +48,4 @@ for i in xrange(1, ncols):
 del(rh)
 del(qh)
 
-print 'cleanup() hangs (thread lock?)'
 print 'cleanup', fast.cleanup()
