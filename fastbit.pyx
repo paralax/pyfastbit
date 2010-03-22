@@ -17,8 +17,6 @@ to read multiple configuration files to modify the parameters."""
         """add_values(self, colname, coltype, vals, start)
 
 Add values of the specified column (colname) to the in-memory buffer.
-
-NOTE: Only 100000 values may be commtted at once in add_values(). 
  
   colname Name of the column. Must start with an alphabet and 
    followed by a combination of alphanumerical characters. Following 
@@ -33,56 +31,80 @@ NOTE: Only 100000 values may be commtted at once in add_values().
    Normally, this argument is zero (0) if all values are valid. One may 
    use this argument to skip some rows and indicate to FastBit that the 
    skipped rows contain NULL values."""
-        cdef int n = len(invals)
-        # XXXX gross hack ...
-        if len(invals) > 100000:
-            raise Exception, "Only 100000 values may be added at once before flushing"
-        cdef int32_t  ivals[100000]
-        cdef int16_t  svals[100000]
-        cdef float    fvals[100000]
-        cdef int64_t  lvals[100000]
-        cdef char    *bvals[100000]
-        cdef uint32_t uivals[100000]
-        cdef uint16_t usvals[100000]
-        cdef uint64_t ulvals[100000]
-        cdef unsigned char    *ubvals[100000]
+        cdef int i, n = len(invals)
 
-        if coltype.lower().startswith('i'):
-            for i in xrange(0, len(invals)): 
-                ivals[i] = <int32_t>(invals[i])
-            return fastbit_add_values (colname, coltype, ivals, n, start)
-        elif coltype.lower().startswith('s'):
-            for i in xrange(0, len(invals)): 
-                svals[i] = <int16_t>(invals[i])
-            return fastbit_add_values (colname, coltype, svals, n, start)
-        elif coltype.lower().startswith('f'):
-            for i in xrange(0, len(invals)): 
-                fvals[i] = <float>(invals[i])
-            return fastbit_add_values (colname, coltype, fvals, n, start)
-        elif coltype.lower().startswith('l'):
-            for i in xrange(0, len(invals)): 
-                lvals[i] = <int64_t>(invals[i])
-            return fastbit_add_values (colname, coltype, lvals, n, start)
-        elif coltype.lower().startswith('b'):
-            for i in xrange(0, len(invals)):
-                bvals[i] = <char *>(invals[i])
-        elif coltype.lower().startswith('u'):
-            if coltype.lower()[1] == 'i':
-                for i in xrange(0, len(invals)):             
-                    uivals[i] = <uint32_t>(invals[i])
-                return fastbit_add_values (colname, coltype, uivals, n, start)
-            elif coltype.lower()[1] == 's':
-                for i in xrange(0, len(invals)):             
-                    usvals[i] = <uint16_t>(invals[i])
-                return fastbit_add_values (colname, coltype, usvals, n, start)
-            elif coltype.lower()[1] == 'l':
-                for i in xrange(0, len(invals)):             
-                    ulvals[i] = <uint64_t>(invals[i]) 
-                return fastbit_add_values (colname, coltype, ulvals, n, start)
-            elif coltype.lower()[1] == 'b':
-                for i in xrange(0, len(invals)):             
-                    ubvals[i] = <unsigned char *>(invals[i]) 
-                return fastbit_add_values (colname, coltype, ubvals, n, start)
+        cdef int16_t *svals
+        cdef int32_t *ivals
+        cdef float *fvals
+        cdef int64_t *lvals
+        cdef char **bvals
+        cdef uint16_t *usvals
+        cdef uint32_t *uivals
+        cdef uint64_t *ulvals
+        cdef unsigned char **ubvals
+
+        col = coltype.lower()
+
+        if col.startswith('i'):
+            ivals = <int32_t *>malloc(sizeof(int32_t) * (n + 1))
+            for i in range(n): ivals[i] = invals[i]
+            r = fastbit_add_values (colname, coltype, ivals, n, start)
+            free(ivals)
+            return r
+
+        elif col.startswith('s'):
+            svals = <int16_t *>malloc(sizeof(int16_t) * (n + 1))
+            for i in range(n): svals[i] = invals[i]
+            r = fastbit_add_values (colname, coltype, svals, n, start)
+            free(svals)
+            return r
+
+        elif col.startswith('f'):
+            fvals = <float *>malloc(sizeof(float) * (n + 1))
+            for i in range(n): fvals[i] = invals[i]
+            r = fastbit_add_values (colname, coltype, fvals, n, start)
+            free(fvals)
+            return r
+        elif col.startswith('l'):
+            lvals = <int64_t *>malloc(sizeof(int64_t) * (n + 1))
+            for i in range(n): lvals[i] = invals[i]
+            r = fastbit_add_values (colname, coltype, lvals, n, start)
+            free(lvals)
+            return r
+        elif col.startswith('b'):
+            # TODO: check this.
+            bvals = <char **>malloc(sizeof(char) * (n + 1))
+            for i in range(n): bvals[i] = invals[i]
+            r = fastbit_add_values (colname, coltype, bvals, n, start)
+            free(bvals)
+            return r
+
+        elif col.startswith('u'):
+            if col[1] == 'i':
+                uivals = <uint32_t *>malloc(sizeof(uint32_t) * (n + 1))
+                for i in range(n): uivals[i] = invals[i]
+                r = fastbit_add_values (colname, coltype, uivals, n, start)
+                free(uivals)
+                return r
+            elif col[1] == 's':
+                usvals = <uint16_t *>malloc(sizeof(uint16_t) * (n + 1))
+                for i in range(n): usvals[i] = invals[i]
+                r = fastbit_add_values (colname, coltype, usvals, n, start)
+                free(usvals)
+                return r
+            elif col[1] == 'l':
+                ulvals = <uint64_t *>malloc(sizeof(uint64_t) * (n + 1))
+                for i in range(n): ulvals[i] = invals[i]
+                r = fastbit_add_values (colname, coltype, ulvals, n, start)
+                free(ulvals)
+                return r
+            elif col[1] == 'b':
+                # TODO: check.
+                ubvals = <unsigned char **>malloc(sizeof(unsigned char *) * (n + 1))
+                for i in range(n): ubvals[i] = invals[i]
+                r = fastbit_add_values (colname, coltype, ubvals, n, start)
+                free(ubvals)
+                return r
         else:
             raise Exception, 'unsupported coltype %s' % coltype
 
@@ -241,7 +263,7 @@ Return the string form of the select clause. """
         """get_qualified_bytes(self, cname)
 
 Return the bytes from the qualified selection by column. """
-        cdef char *d = fastbit_get_qualified_bytes(<FastBitQuery*>(self.qh), cname)
+        cdef char *d = fastbit_get_qualified_bytes(self.qh, cname)
         cdef int i, rows = fastbit_get_result_rows(self.qh)
         return [d[i] for i in range(rows)]
                 

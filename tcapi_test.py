@@ -1,11 +1,15 @@
 #!/usr/bin/env python
 
 import sys
+import os
 from fastbit import FastBit, Query
 
 counts = (5, 24, 19, 10, 50)
 conditions = ("a<5", "a+b>150", "a < 60 and c < 60", "c > 90", "c > a")
 datadir = 'tcapi_test_dir'
+if os.path.exists(datadir):
+    import shutil
+    shutil.rmtree(datadir)
 
 ivals = []
 svals = []
@@ -18,7 +22,7 @@ for i in xrange(0, 100):
 fb = FastBit()
 fb.add_values('a', 'int', ivals, 0)
 fb.add_values('b', 'short', svals, 0)
-fb.add_values('c', 'float', ivals, 0)
+fb.add_values('c', 'float', fvals, 0)
 fb.flush_buffer(datadir)
 mult = fb.rows_in_partition(datadir)
 if mult%100 != 0:
