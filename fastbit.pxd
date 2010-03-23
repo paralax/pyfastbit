@@ -43,8 +43,12 @@ cdef extern from "../src/capi.h":
 
     void     fastbit_init(char *rcfile)
     int      fastbit_add_values(char *colname, char *coltype, void *vals, uint32_t nelem, uint32_t start)
+
     int      fastbit_build_index (char *indexLocation, char *cname, char *indexOptions)
     int      fastbit_build_indexes (char *indexLocation, char *indexOptions)
+    int      fastbit_purge_index(char *indexLocation, char *cname)
+    int      fastbit_purge_indexes(char *indexLocation)
+
     void     fastbit_cleanup()
     int      fastbit_columns_in_partition (char *datadir)
     int      fastbit_rows_in_partition(char *datadir)
@@ -53,8 +57,6 @@ cdef extern from "../src/capi.h":
     int      fastbit_set_logfile(char *filename)
     int      fastbit_get_verbose_level()
     int      fastbit_set_verbose_level(int v)
-    int      fastbit_purge_index(char *indexLocation, char *cname)
-    int      fastbit_purge_indexes(char *indexLocation)
 
     # Query class  
     FastBitQuery* fastbit_build_query(char *selectClause, char *indexLocation, char *queryConditions)

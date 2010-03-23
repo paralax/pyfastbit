@@ -108,18 +108,27 @@ Add values of the specified column (colname) to the in-memory buffer.
         else:
             raise Exception, 'unsupported coltype %s' % coltype
 
-    def build_index(self, indexLocation, cname):
-        """build_index(self, indexLocation, cname)
+    @classmethod
+    def build_index(cls, datadir, colname, options):
+        """build_index(self, indexLocation, cname) Build an index for the named attribute. """
+        return fastbit_build_index (datadir,  colname, options)
 
-Build an index for the named attribute. """
-        return fastbit_build_index (indexLocation,  cname, NULL)
-
-    def build_indexes(self, indexLocation, indexOptions):
+    @classmethod
+    def build_indexes(cls, datadir, options):
         """build_indexes(self, indexLocation, indexOptions)
+            Build indexes for all columns in the named directory. """
+        return fastbit_build_indexes(datadir, options)
 
-Build indexes for all columns in the named directory. """
-        return fastbit_build_indexes(indexLocation, indexOptions)
+    @classmethod
+    def purge_index(self, datadir, colname):
+        """purge_index(self, indexLocation, cname)
+        Purge the index of the named attribute. """
+        return fastbit_purge_index(datadir, colname)
 
+    @classmethod
+    def purge_indexes(self, datadir):
+        """purge_indexes(self, indexLocation) Purge all index files. """
+        return fastbit_purge_indexes(datadir)
 
     def cleanup(self):
         """cleanup(self)
@@ -176,18 +185,6 @@ Return the current verboseness level. """
 
 Change the verboseness of FastBit functions. """
         return fastbit_set_verbose_level(v)
-   
-    def purge_index(self, indexLocation, cname):
-        """purge_index(self, indexLocation, cname)
-
-Purge the index of the named attribute. """
-        return fastbit_purge_index(indexLocation, cname)
-
-    def purge_indexes(self, indexLocation):
-        """purge_indexes(self, indexLocation)
-
-Purge all index files. """
-        return fastbit_purge_indexes(indexLocation)
 
 
 
@@ -248,9 +245,9 @@ Count the number of columns selected in the select clause of the query. """
 
     def get_result_rows(self):
         """get_result_rows(self)
-
-Return the number of hits in the query. """
-        return fastbit_get_result_rows(<FastBitQuery*>(self.qh))
+        Return the number of hits in the query. """
+        return fastbit_get_result_rows(self.qh)
+    rows = property(get_result_rows)
 
     def get_select_clause(self):
         """get_select_clause(self)
@@ -261,8 +258,7 @@ Return the string form of the select clause. """
 
     def get_qualified_bytes(self, cname):
         """get_qualified_bytes(self, cname)
-
-Return the bytes from the qualified selection by column. """
+        Return the bytes from the qualified selection by column. """
         cdef char *d = fastbit_get_qualified_bytes(self.qh, cname)
         cdef int i, rows = fastbit_get_result_rows(self.qh)
         return [d[i] for i in range(rows)]
