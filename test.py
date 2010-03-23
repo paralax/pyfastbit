@@ -20,9 +20,9 @@ print 'add', fast.add_values('host', 'uI', names, 0)
 print 'flush', fast.flush_buffer('foodir')
 print 'cols', fast.columns_in_partition('foodir')
 print 'rows', fast.rows_in_partition('foodir')
-print 'build_index', fast.build_index('foodir', 'ip')
-print 'build_index', fast.build_index('foodir', 'host')
-print 'build_indexes', fast.build_indexes('foodir', '')
+print 'build_index', FastBit.build_index('foodir', 'ip', '0')
+print 'build_index', FastBit.build_index('foodir', 'host', '0')
+print 'build_indexes', FastBit.build_indexes('foodir', '')
 
 print '----[ Query'
 qh = Query('ip, host', 'foodir', 'ip < %d' % ip2dec('127.0.0.0'))
@@ -49,3 +49,5 @@ del(rh)
 del(qh)
 
 print 'cleanup', fast.cleanup()
+
+#print 'add string', fast.add_values('c', 'ub', [ "hello" for x in ips], 0)
