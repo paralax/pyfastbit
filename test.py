@@ -48,6 +48,8 @@ for i in xrange(1, ncols):
 del(rh)
 del(qh)
 
-print 'cleanup', fast.cleanup()
 
-#print 'add string', fast.add_values('c', 'ub', [ "hello" for x in ips], 0)
+print 'adding string', fast.add_values('cc', 'ub', ["hello" for x in ips])
+print fast.flush_buffer('foodir'), "added"
+
+print 'cleanup', fast.cleanup()

@@ -9,18 +9,19 @@ if os.path.exists(datadir):
     import shutil
     shutil.rmtree(datadir)
 
-nvals = int(3 * 1e6)
+nvals = int(1e6)
 
-conditions = ("a<5", "a+a>150", "a < 60 and c < 60", "c > 90", "c > a")
-counts = (5, nvals - 76, 19, 10, 50)
+conditions = ("a<5", "a+a>150", "a < 60 and c < 60", "c > 90", "c > a") #, 'd = "asdf"')
+counts = (5, nvals - 76, 19, 10, 50) #, nvals)
 
 import time
 t = time.time()
 
 fb = FastBit()
-fb.add_values('a', 'int', range(nvals), 0)
-fb.add_values('b', 'short', [x % 128 for x in range(nvals)] , 0)
-fb.add_values('c', 'float', [float(1e2 -i) for i in xrange(nvals)], 0)
+fb.add_values('a', 'int', range(nvals))
+fb.add_values('b', 'short', [x % 128 for x in range(nvals)])
+fb.add_values('c', 'float', [float(1e2 -i) for i in xrange(nvals)])
+fb.add_values('d', 'ub', ["asdf" for i in xrange(nvals)])
 fb.flush_buffer(datadir)
 
 print "time to add %iK values (* 3): %.3f" % (nvals / 1000., time.time() - t)
@@ -29,16 +30,13 @@ mult = fb.rows_in_partition(datadir)
 if mult != nvals:
     print 'Directory %d contains %d rows, expected %i' % (datadir, mult, nvals)
     sys.exit(1)
-#FastBit.build_index(datadir, 'a', '0')
-#FastBit.build_index(datadir, 'b', '0')
-#FastBit.build_index(datadir, 'c', '0')
 
 nerrors = 0
 # NOTE runs faster second time.
 for rep in range(2):
     if rep == 1:
         print "\nafter indexes (automatically) created...\n"
-    for i in xrange(0, 5):
+    for i in xrange(len(conditions)):
         t = time.time()
         q = Query('', datadir, conditions[i])
         nhits = q.rows

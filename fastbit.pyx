@@ -1,5 +1,7 @@
 #PyEval_InitThreads()
 #
+cimport python_string as ps
+
 class FastBit:
     def __init__(self, rcfile=None):
         """May pass in None as rcfile if one is expected to use use the 
@@ -13,7 +15,7 @@ to read multiple configuration files to modify the parameters."""
     def __del__(self):
         self.cleanup()
 
-    def add_values(self, colname, coltype, invals, start):
+    def add_values(self, colname, coltype, invals, int start=0):
         """add_values(self, colname, coltype, vals, start)
 
 Add values of the specified column (colname) to the in-memory buffer.
@@ -43,6 +45,8 @@ Add values of the specified column (colname) to the in-memory buffer.
         cdef uint64_t *ulvals
         cdef unsigned char **ubvals
 
+        cdef Py_ssize_t size
+        cdef char *holder
         col = coltype.lower()
 
         if col.startswith('i'):
@@ -99,9 +103,12 @@ Add values of the specified column (colname) to the in-memory buffer.
                 free(ulvals)
                 return r
             elif col[1] == 'b':
-                # TODO: check.
                 ubvals = <unsigned char **>malloc(sizeof(unsigned char *) * (n + 1))
-                for i in range(n): ubvals[i] = invals[i]
+                for i in range(n): 
+                    # TODO: should we just use char * from teh start and ditch the unsigned?
+                    #ubvals[i] = <unsigned char *>malloc(sizeof(unsigned char *) * len(invals[i]))
+                    #ubvals[i] = <unsigned char *>ps.PyString_AsString(invals[i])
+                    ps.PyString_AsStringAndSize(invals[i], <char **>(&ubvals[i]), &size)
                 r = fastbit_add_values (colname, coltype, ubvals, n, start)
                 free(ubvals)
                 return r
