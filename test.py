@@ -15,14 +15,13 @@ ips = ['24.126.104.55', '63.254.155.34', '64.189.104.238',
        '81.222.80.217', '98.230.97.172', '157.252.179.242', 
        '208.102.79.212']
 print 'add', fast.add_values('ip', 'uI', [ ip2dec(x) for x in ips], 0)
-names = [ x for x in  xrange(0, len(ips)) ]
-print 'add', fast.add_values('host', 'uI', names, 0)
+print 'add', fast.add_values('host', 't', ips, 0)
 print 'flush', fast.flush_buffer('foodir')
 print 'cols', fast.columns_in_partition('foodir')
 print 'rows', fast.rows_in_partition('foodir')
-print 'build_index', FastBit.build_index('foodir', 'ip', '0')
-print 'build_index', FastBit.build_index('foodir', 'host', '0')
-print 'build_indexes', FastBit.build_indexes('foodir', '')
+print 'build_index', fast.build_index('foodir', 'ip', '')
+print 'build_index', fast.build_index('foodir', 'host', '')
+print 'build_indexes', fast.build_indexes('foodir', '')
 
 print '----[ Query'
 qh = Query('ip, host', 'foodir', 'ip < %d' % ip2dec('127.0.0.0'))
@@ -36,6 +35,8 @@ print 'qualified longs', qh.get_qualified_longs('ip')
 
 print '----[ Results'
 rh = ResultSet(qh)
+while rh.has_next() != -1:
+    print 'ip:%d\thost:%s' % (rh.get_int('ip'), rh.get_string('host'))
 ncols = qh.get_result_columns()
 print 'getInt', rh.getInt(0)
 print 'getUnsigned', rh.getUnsigned(0)
@@ -49,7 +50,7 @@ del(rh)
 del(qh)
 
 
-print 'adding string', fast.add_values('cc', 'ub', ["hello" for x in ips])
+print 'adding string', fast.add_values('cc', 't', ["hello" for x in ips], 0)
 print fast.flush_buffer('foodir'), "added"
 
 print 'cleanup', fast.cleanup()

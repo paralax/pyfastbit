@@ -75,6 +75,14 @@ Add values of the specified column (colname) to the in-memory buffer.
             r = fastbit_add_values (colname, coltype, lvals, n, start)
             free(lvals)
             return r
+        elif col.startswith('t'):
+            # TODO: check this.
+            bvals = <char **>malloc(sizeof(char *) * (n + 1))
+            for i in range(n):
+                bvals[i] = invals[i]
+            r = fastbit_add_values (colname, coltype, bvals, n, start)
+            free(bvals)
+            return r
         elif col.startswith('b'):
             # TODO: check this.
             bvals = <char **>malloc(sizeof(char) * (n + 1))
